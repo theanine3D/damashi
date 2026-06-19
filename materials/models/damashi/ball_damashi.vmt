@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+	"$model" 1
+	"$basetexture" "models/damashi/ball_damashi"
+	"$phong" 1
+	"$bumpmap" "models/damashi/default_n"
+	$phongexponent			30
+	$phongboost				5.0
+	$phongfresnelranges		"[0 0.5 1]"
+
+}

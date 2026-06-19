@@ -1,0 +1,90 @@
+"damashi"
+{
+	"base"			"base"
+	"title"			"Damashi"
+	"version"		"1"
+	"maps"			""
+	"menusystem"	"1"
+    "author_name"   "Theanine3D"
+    "author_email"  ""
+	"author_url"    "https://github.com/theanine3D/damashi"
+
+
+    "hide"  "0"
+
+	"settings"
+	{
+		"1"
+		{
+			"name"		"damashi_scatter"
+			"text"		"Extra props scattered per round"
+			"help"		"Number of additional junk props spawned around player spawns at the start of each round"
+			"type"		"Numeric"
+			"default"	"800"
+		}
+		"2"
+		{
+			"name"		"damashi_roundtime"
+			"text"		"Round time (seconds)"
+			"help"		"Length of a round; when it runs out the player with the largest ball wins"
+			"type"		"Numeric"
+			"default"	"300"
+		}
+		"3"
+		{
+			"name"		"damashi_propmode_hl2"
+			"text"		"Use HL2 built-in scatter props"
+			"help"		"1 = include the built-in HL2 prop list when scattering props at round start. 0 = disable."
+			"type"		"Numeric"
+			"default"	"1"
+		}
+		"4"
+		{
+			"name"		"damashi_propmode_map"
+			"text"		"Use map-packed scatter props"
+			"help"		"1 = add physics props already placed inside the map as scatter candidates. 0 = disable."
+			"type"		"Numeric"
+			"default"	"0"
+		}
+		"5"
+		{
+			"name"		"damashi_propmode_server"
+			"text"		"Use server custom scatter props"
+			"help"		"1 = include models the server admin placed in models/damashi/scatter/. 0 = disable."
+			"type"		"Numeric"
+			"default"	"1"
+		}
+		"6"
+		{
+			"name"		"damashi_spawnmult"
+			"text"		"Prop spawn multiplier"
+			"help"		"Multiplies how many props are scattered at round start. 2.0 = double, 0.5 = half."
+			"type"		"Numeric"
+			"default"	"1.0"
+		}
+		"7"
+		{
+			"name"		"damashi_wave_interval"
+			"text"		"Scatter wave interval (seconds)"
+			"help"		"How often a mid-round scatter wave drops fresh props during a round. Set to 0 to disable."
+			"type"		"Numeric"
+			"default"	"60"
+		}
+		"8"
+		{
+			"name"		"damashi_wave_size"
+			"text"		"Scatter wave size"
+			"help"		"Number of props dropped per mid-round scatter wave."
+			"type"		"Numeric"
+			"default"	"120"
+		}
+		"9"
+		{
+			"name"		"damashi_scatter_passes"
+			"text"		"Scatter flood-fill generations"
+			"help"		"Number of flood-fill generations used when scattering props at round start. Each generation seeds from the previous generation's prop positions, spreading coverage progressively outward. More generations = wider map coverage. 1 = single-pass scatter around spawn only."
+			"type"		"Numeric"
+			"default"	"5"
+		}
+	}
+}

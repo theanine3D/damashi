@@ -1,0 +1,37 @@
+//-------------------------------------------------------------------------
+//
+// Game data for Damashi
+//
+//-------------------------------------------------------------------------
+
+@include "base.fgd"
+
+@PointClass base(Targetname, Origin, Angles) iconsprite("editor/game_player.vmt") = damashi_settings :
+	"Point entity that overrides Damashi gamemode settings for this map. "+
+	"Place one anywhere in the map. Only the first instance found is used. "+
+	"Any setting left at its default value will fall back to the matching server convar."
+[
+	roundtime(integer) : "Round time (seconds)" : 300 : "How long each round lasts before the player with the largest ball wins. Overrides the damashi_roundtime convar. Set to 0 to use the convar value."
+
+	scatter(integer) : "Scattered props per round" : 80 : "Number of extra physics props spawned around player spawn points at the start of each round. Overrides the damashi_scatter convar. Set to -1 to use the convar value."
+
+	propmode_hl2(choices) : "Use HL2 built-in scatter props" : 1 : "Whether to include the built-in HL2 prop list when scattering props each round. Overrides the damashi_propmode_hl2 convar." =
+	[
+		1 : "Enabled"
+		0 : "Disabled"
+	]
+
+	propmode_map(choices) : "Use map-packed scatter props" : 0 : "Whether to add physics props already placed inside the map as scatter candidates. Overrides the damashi_propmode_map convar." =
+	[
+		0 : "Disabled"
+		1 : "Enabled"
+	]
+
+	propmode_server(choices) : "Use server custom scatter props" : 1 : "Whether to include models the server admin placed in models/damashi/scatter/. Overrides the damashi_propmode_server convar." =
+	[
+		1 : "Enabled"
+		0 : "Disabled"
+	]
+
+	spawnmult(float) : "Prop spawn multiplier" : 1.0 : "Multiplies how many props are scattered at round start. 2.0 = double props, 0.5 = half. Overrides the damashi_spawnmult convar. Set to -1 to use the convar value."
+]
