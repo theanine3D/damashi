@@ -13,7 +13,7 @@ game, with a race against the timer to beat your previous highest score.
 
 ## Installation
 
-The easiest way to install the gamemode is through the [Steam Workshop](https://steamcommunity.com/sharedfiles/itemedittext/?id=3748029739).
+The easiest way to install the gamemode is through the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3748029739).
 
 If you prefer to install it manually, press the big green "Code" button at
 the top of the GitHub page, then choose "Download ZIP" to download the addon.
