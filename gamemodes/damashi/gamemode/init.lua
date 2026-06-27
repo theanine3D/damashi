@@ -72,12 +72,16 @@ end
 
 function GM:CollectBallModels()
 	self.BallModels = { DAMASHI.DefaultBallModel }
-
-	local files = file.Find("models/damashi/ball_*.mdl", "GAME")
-	for _, f in ipairs(files) do
+	self.BallNames = {}
+	local mdlFiles = file.Find("models/damashi/ball_*.mdl", "GAME")
+	for _, f in ipairs(mdlFiles) do
 		local path = "models/damashi/" .. f
 		if path ~= DAMASHI.DefaultBallModel then
 			table.insert(self.BallModels, path)
+			local namesListName = "models/damashi/" .. f:StripExtension():Replace("ball_", "names_") .. ".txt"
+			if file.Exists(namesListName, "GAME") then 
+				self.BallNames[path] = namesListName
+			end
 		end
 	end
 end
@@ -87,6 +91,10 @@ function GM:SendBallModelList(ply)
 		net.WriteUInt(#self.BallModels, 8)
 		for _, mdl in ipairs(self.BallModels) do
 			net.WriteString(mdl)
+			net.WriteBool(self.BallNames[mdl])
+			if self.BallNames[mdl] then
+				net.WriteString(self.BallNames[mdl])
+			end
 		end
 	if ply then
 		net.Send(ply)

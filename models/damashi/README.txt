@@ -17,11 +17,36 @@ Rules
 -----
 - The model must have a matching .phy file so it can be spawned as
   a physics object.
-- The model should be roughly sphere-shaped and ideally close in size
-  to the default ball (models/hunter/misc/sphere075x075.mdl, r~37 units)
-  so the selector preview looks sensible.
+- The model should be roughly sphere-shaped.
 - Pack all required model files (.mdl, .vvd, .vtx, .phy, .vtf, .vmt)
   into the BSP or distribute them alongside the gamemode.
-- The display name shown in the selector is derived from the filename:
-  underscores become spaces and the first letter is capitalised.
-  "ball_beach_ball.mdl" → "Beach Ball"
+
+Display Names
+-------------
+By default, the display name for a given model is derived from the 
+filename and the skin ID. The filename portion omits the "ball_" 
+prefix and formats the string using the same rules as string.NiceName() in GLua:
+  1. Underscores are replaced with spaces
+     ("Deluxe_Ball" -> "Deluxe Ball")
+  2. Text is split into sentences based on capitalization 
+     ("BallNumber3" -> "Ball Number 3")
+  3. The first letter of each word is capitalized.
+     ("crazy_ball" -> "Crazy Ball")
+Examples:
+  ball_tennis.mdl, skin 2/2     -> Tennis (skin 2)
+  ball_basketball.mdl, skin 0/0 -> Basketball
+
+Display names for a given model can be overridden with custom ones
+by adding a .txt file with the same name as the .mdl, but starting
+with "names_" (for example, the names list for 
+"ball_soccer.mdl" is named "names_soccer.txt")
+
+Name files are read line-by-line in the following format:
+  - Lines starting with "[number]:" set the name for a specific skin.
+      (Example: "4: Awesome Ball" sets skin 4's name to "Awesome Ball")
+      NOTE: Skin IDs start at 0!
+  - Lines starting with "n:" set the name for the model itself, replacing
+    the portion generated from the filename.
+    (Example: "n: Basket Ball" sets the model's base name to "Basket Ball",
+    and any unnamed skins will be named "Basket Ball (skin #)")
+  - Empty lines or lines starting with "#" are ignored.

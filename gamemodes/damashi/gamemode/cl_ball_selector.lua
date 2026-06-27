@@ -1,4 +1,5 @@
 local BallModels = {}
+local BallNames = {}
 local SelectorFrame = nil
 
 local COL_BG       = Color(20, 20, 30, 230)
@@ -8,28 +9,50 @@ local COL_HOVER    = Color(60, 80, 110, 220)
 local COL_TEXT     = Color(240, 240, 245, 255)
 local COL_DIM      = Color(170, 170, 185, 255)
 
+local function ParseNameList(path)
+	local nameList = {}
+	local listFile = file.Read(path, "GAME")
+	for _, line in ipairs(listFile:Split("\n")) do
+		if not line:TrimLeft():StartsWith("#") then 
+			local id, name = string.match(line, "(n?[0-9]-):%s-(.+)[%s%c]-$")
+			if id and name then
+				if id:StartsWith("n") then 
+					nameList["name"] = name 
+				else
+					nameList[tonumber(id)] = name
+				end
+			end
+		end
+	end
+	return nameList
+end
+
 net.Receive("damashi_ball_models", function()
 	BallModels = {}
+	BallNames = {}
 	local count = net.ReadUInt(8)
 	for i = 1, count do
-		table.insert(BallModels, net.ReadString())
+		local mdl = net.ReadString()
+		table.insert(BallModels, mdl)
+		local hasNameList = net.ReadBool()
+		if hasNameList then 
+			BallNames[mdl] = ParseNameList(net.ReadString())
+		end
 	end
 end)
 
 local function modelDisplayName(mdl, skin, appendSkinNum)
 	if mdl == DAMASHI.DefaultBallModel then return "Default" end
-	local stem = mdl:match("ball_([^/]+)%.mdl$")
-	local dispName
-	if stem then
-		stem = stem:gsub("_", " ")
-		dispName = stem:sub(1, 1):upper() .. stem:sub(2)
-	else
-		dispName = mdl:match("([^/]+)%.mdl$") or mdl
-	end
+
+	local names = BallNames[mdl] or {}
+	local skinName = names[skin]
+	if skinName then return skinName end
+
+	local stem = names["name"] or (mdl:match("ball_([^/]+)%.mdl$") or mdl:match("([^/]+)%.mdl$") or mdl):NiceName()
 	if appendSkinNum then 
-		dispName = dispName .. string.format(" (Skin %u)", skin)
+		stem = stem .. string.format(" (Skin %u)", skin)
 	end
-	return dispName
+	return stem
 end
 
 local function currentModel()
