@@ -71,6 +71,10 @@ local function BuildSelector()
 	frame:MakePopup()
 	frame:SetDraggable(true)
 	frame:SetDeleteOnClose(true)
+	// Make frame auto-close when the pause menu opens
+	hook.Add("OnPauseMenuShow", frame, function()
+		frame:Close()
+	end)
 
 	local scroll = vgui.Create("DScrollPanel", frame)
 	scroll:Dock(FILL)
@@ -84,14 +88,16 @@ local function BuildSelector()
 
 	local selMdl = currentModel()
 	local selSkin = currentSkin()
-	print("Setting up models")
+	
+	// Set up model list
 	for _, mdl in ipairs(models) do
 		local skinCount = util.GetModelInfo(mdl).SkinCount
 		for skin = 0, skinCount - 1 do
 			local isSelected = (mdl == selMdl) and (skin == selSkin or skinCount == 1)
 
-			local entry = vgui.Create("DPanel", layout)
+			local entry = vgui.Create("DButton", layout)
 			entry:SetSize(ENTRY_W, ENTRY_H)
+			entry:SetText("")
 			entry.mdl = mdl
 			entry.skin = skin
 
@@ -115,10 +121,17 @@ local function BuildSelector()
 			mdlPanel:Dock(FILL)
 			mdlPanel:DockMargin(4, 4, 4, 2)
 			mdlPanel:SetModel(mdl)
-			mdlPanel:GetEntity():SetSkin(skin)
+			local mdlPanelEnt = mdlPanel:GetEntity()
+			mdlPanelEnt:SetSkin(skin)
+			// set model scale
+			local mdlPanelEntBoundsMin, mdlPanelEntBoundsMax = mdlPanelEnt:GetRenderBounds()
+			local mdlPanelEntBounds = mdlPanelEntBoundsMax - mdlPanelEntBoundsMin
+			local mdlPanelEntBoundsLen = math.max(mdlPanelEntBounds.x, mdlPanelEntBounds.y, mdlPanelEntBounds.z)
+			mdlPanelEnt:SetModelScale(75.0 / mdlPanelEntBoundsLen, 0)
 			mdlPanel:SetCamPos(Vector(70, 45, 35))
 			mdlPanel:SetLookAt(Vector(0, 0, 0))
 			mdlPanel:SetFOV(50)
+			mdlPanel:SetMouseInputEnabled(false)
 
 			function mdlPanel:LayoutEntity(ent)
 				ent:SetAngles(Angle(0, RealTime() * 35 % 360, 0))
