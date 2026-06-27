@@ -402,15 +402,18 @@ function GM:AttachBall(ply)
 		local customs = {}
 		for _, m in ipairs(self.BallModels or {}) do
 			if m ~= DAMASHI.DefaultBallModel then
-				table.insert(customs, m)
+				for s = 0, util.GetModelInfo(m).SkinCount - 1 do 
+					table.insert(customs, {m, s})
+				end
 			end
 		end
 		if #customs > 0 then
-			ply.DamashiBallModel = customs[math.random(#customs)]
+			ply.DamashiBallModel = customs[math.random(#customs)][1]
+			ply.DamashiBallSkin = customs[math.random(#customs)][2]
 		else
 			ply.DamashiBallModel = DAMASHI.DefaultBallModel
+			ply.DamashiBallSkin = 0
 		end
-		ply.DamashiBallSkin = math.random(util.GetModelInfo(ply.DamashiBallModel).SkinCount)
 		ply:SetNWString("DamashiBallModel", ply.DamashiBallModel)
 		ply:SetNWString("DamashiBallSkin", ply.DamashiBallSkin)
 	end
