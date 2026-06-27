@@ -105,6 +105,7 @@ end
 
 net.Receive("damashi_select_ball", function(len, ply)
 	local mdl = net.ReadString()
+	local skin = net.ReadUInt(10)
 
 	-- Only allow models from the server-approved list.
 	local allowed = false
@@ -114,11 +115,13 @@ net.Receive("damashi_select_ball", function(len, ply)
 	if not allowed then return end
 
 	ply.DamashiBallModel = mdl
+	ply.DamashiBallSkin = skin
 	ply:SetNWString("DamashiBallModel", mdl)
+	ply:SetNWString("DamashiBallSkin", skin)
 
 	local ball = ply.DamashiBall
 	if IsValid(ball) then
-		ball:ChangeModel(mdl)
+		ball:ChangeModel(mdl, skin)
 	end
 end)
 
@@ -407,13 +410,16 @@ function GM:AttachBall(ply)
 		else
 			ply.DamashiBallModel = DAMASHI.DefaultBallModel
 		end
+		ply.DamashiBallSkin = math.random(util.GetModelInfo(ply.DamashiBallModel).SkinCount)
 		ply:SetNWString("DamashiBallModel", ply.DamashiBallModel)
+		ply:SetNWString("DamashiBallSkin", ply.DamashiBallSkin)
 	end
 
 	local ball = ents.Create("damashi_ball")
 	if not IsValid(ball) then return end
 
 	ball.PreferredModel = ply.DamashiBallModel
+	ball.PreferredSkin = ply.DamashiBallSkin
 
 	ball:SetPos(ply:GetPos() + Vector(0, 0, DAMASHI.BaseRadius + 4))
 	ball:Spawn()

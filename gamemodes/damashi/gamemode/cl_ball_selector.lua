@@ -16,19 +16,30 @@ net.Receive("damashi_ball_models", function()
 	end
 end)
 
-local function modelDisplayName(mdl)
+local function modelDisplayName(mdl, skin, appendSkinNum)
 	if mdl == DAMASHI.DefaultBallModel then return "Default" end
 	local stem = mdl:match("ball_([^/]+)%.mdl$")
+	local dispName
 	if stem then
 		stem = stem:gsub("_", " ")
-		return stem:sub(1, 1):upper() .. stem:sub(2)
+		dispName = stem:sub(1, 1):upper() .. stem:sub(2)
+	else
+		dispName = mdl:match("([^/]+)%.mdl$") or mdl
 	end
-	return mdl:match("([^/]+)%.mdl$") or mdl
+	if appendSkinNum then 
+		dispName = dispName .. string.format(" (Skin %u)", skin)
+	end
+	return dispName
 end
 
 local function currentModel()
 	if not IsValid(LocalPlayer()) then return DAMASHI.DefaultBallModel end
 	return LocalPlayer():GetNWString("DamashiBallModel", DAMASHI.DefaultBallModel)
+end
+
+local function currentSkin()
+	if not IsValid(LocalPlayer()) then return DAMASHI.DefaultBallSkin end
+	return LocalPlayer():GetNWString("DamashiBallSkin", DAMASHI.DefaultBallSkin)
 end
 
 local ENTRY_W  = 148
@@ -71,72 +82,79 @@ local function BuildSelector()
 	layout:SetSpaceY(PADDING)
 	layout:SetBorder(PADDING)
 
-	local sel = currentModel()
-
+	local selMdl = currentModel()
+	local selSkin = currentSkin()
+	print("Setting up models")
 	for _, mdl in ipairs(models) do
-		local isSelected = (mdl == sel)
+		local skinCount = util.GetModelInfo(mdl).SkinCount
+		for skin = 0, skinCount - 1 do
+			local isSelected = (mdl == selMdl) and (skin == selSkin or skinCount == 1)
 
-		local entry = vgui.Create("DPanel", layout)
-		entry:SetSize(ENTRY_W, ENTRY_H)
-		entry.mdl = mdl
+			local entry = vgui.Create("DPanel", layout)
+			entry:SetSize(ENTRY_W, ENTRY_H)
+			entry.mdl = mdl
+			entry.skin = skin
 
-		entry.Paint = function(self, w, h)
-			local bg = isSelected and COL_SELECTED or COL_BG
-			draw.RoundedBox(6, 0, 0, w, h, bg)
-			surface.SetDrawColor(isSelected and COL_SELECTED or COL_BORDER)
-			surface.DrawOutlinedRect(0, 0, w, h, 2)
-		end
+			entry.Paint = function(self, w, h)
+				local bg = isSelected and COL_SELECTED or COL_BG
+				draw.RoundedBox(6, 0, 0, w, h, bg)
+				surface.SetDrawColor(isSelected and COL_SELECTED or COL_BORDER)
+				surface.DrawOutlinedRect(0, 0, w, h, 2)
+			end
 
-		-- Label docked first so FILL takes the remaining space above it.
-		local lbl = vgui.Create("DLabel", entry)
-		lbl:Dock(BOTTOM)
-		lbl:SetHeight(LABEL_H)
-		lbl:SetText(modelDisplayName(mdl))
-		lbl:SetFont("DamashiHUDSmall")
-		lbl:SetTextColor(COL_TEXT)
-		lbl:SetContentAlignment(5)
+			-- Label docked first so FILL takes the remaining space above it.
+			local lbl = vgui.Create("DLabel", entry)
+			lbl:Dock(BOTTOM)
+			lbl:SetHeight(LABEL_H)
+			lbl:SetText(modelDisplayName(mdl, skin, skinCount > 1))
+			lbl:SetFont("DamashiHUDSmall")
+			lbl:SetTextColor(COL_TEXT)
+			lbl:SetContentAlignment(5)
 
-		local mdlPanel = vgui.Create("DModelPanel", entry)
-		mdlPanel:Dock(FILL)
-		mdlPanel:DockMargin(4, 4, 4, 2)
-		mdlPanel:SetModel(mdl)
-		mdlPanel:SetCamPos(Vector(70, 45, 35))
-		mdlPanel:SetLookAt(Vector(0, 0, 0))
-		mdlPanel:SetFOV(50)
+			local mdlPanel = vgui.Create("DModelPanel", entry)
+			mdlPanel:Dock(FILL)
+			mdlPanel:DockMargin(4, 4, 4, 2)
+			mdlPanel:SetModel(mdl)
+			mdlPanel:GetEntity():SetSkin(skin)
+			mdlPanel:SetCamPos(Vector(70, 45, 35))
+			mdlPanel:SetLookAt(Vector(0, 0, 0))
+			mdlPanel:SetFOV(50)
 
-		function mdlPanel:LayoutEntity(ent)
-			ent:SetAngles(Angle(0, RealTime() * 35 % 360, 0))
-		end
+			function mdlPanel:LayoutEntity(ent)
+				ent:SetAngles(Angle(0, RealTime() * 35 % 360, 0))
+			end
 
-		entry.OnCursorEntered = function(self)
-			if not isSelected then
-				self.Paint = function(s, w, h)
-					draw.RoundedBox(6, 0, 0, w, h, COL_HOVER)
-					surface.SetDrawColor(COL_BORDER)
-					surface.DrawOutlinedRect(0, 0, w, h, 2)
+			entry.OnCursorEntered = function(self)
+				if not isSelected then
+					self.Paint = function(s, w, h)
+						draw.RoundedBox(6, 0, 0, w, h, COL_HOVER)
+						surface.SetDrawColor(COL_BORDER)
+						surface.DrawOutlinedRect(0, 0, w, h, 2)
+					end
 				end
 			end
-		end
-		entry.OnCursorExited = function(self)
-			if not isSelected then
-				self.Paint = function(s, w, h)
-					draw.RoundedBox(6, 0, 0, w, h, COL_BG)
-					surface.SetDrawColor(COL_BORDER)
-					surface.DrawOutlinedRect(0, 0, w, h, 2)
+			entry.OnCursorExited = function(self)
+				if not isSelected then
+					self.Paint = function(s, w, h)
+						draw.RoundedBox(6, 0, 0, w, h, COL_BG)
+						surface.SetDrawColor(COL_BORDER)
+						surface.DrawOutlinedRect(0, 0, w, h, 2)
+					end
 				end
 			end
-		end
 
-		entry.DoClick = function(self)
-			net.Start("damashi_select_ball")
-				net.WriteString(self.mdl)
-			net.SendToServer()
-			frame:Close()
-		end
-		entry:SetCursor("hand")
+			entry.DoClick = function(self)
+				net.Start("damashi_select_ball")
+					net.WriteString(self.mdl)
+					net.WriteUInt(self.skin, 10)
+				net.SendToServer()
+				frame:Close()
+			end
+			entry:SetCursor("hand")
 
-		-- DModelPanel consumes clicks; forward them to the entry so the whole card is clickable.
-		mdlPanel.DoClick = function() entry:DoClick() end
+			-- DModelPanel consumes clicks; forward them to the entry so the whole card is clickable.
+			mdlPanel.DoClick = function() entry:DoClick() end
+		end
 	end
 end
 

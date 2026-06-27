@@ -15,8 +15,11 @@ end
 
 function BALL:Initialize()
 	local mdl = self.PreferredModel or DAMASHI.DefaultBallModel
+	local skin = self.PreferredSkin or DAMASHI.DefaultBallSkin
 	self:SetModel(mdl)
+	self:SetSkin(skin)
 	self:SetNWString("DamashiBallModel", mdl)
+	self:SetNWString("DamashiBallSkin", skin)
 
 	self.ModelRadius = math.max(self:OBBMaxs().x, 1)
 	-- Scale the model once so it matches the starting sphere size, then leave it
@@ -44,9 +47,11 @@ function BALL:Initialize()
 	self:ApplyRadius(DAMASHI.BaseRadius)
 end
 
-function BALL:ChangeModel(mdl)
+function BALL:ChangeModel(mdl, skin)
 	self:SetModel(mdl)
+	self:SetSkin(skin)
 	self:SetNWString("DamashiBallModel", mdl)
+	self:SetNWString("DamashiBallSkin", skin)
 	if mdl == DAMASHI.DefaultBallModel then
 		self:SetColor(HSVToColor(math.random(0, 359), 0.45, 1))
 	else
