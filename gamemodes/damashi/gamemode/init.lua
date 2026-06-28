@@ -72,12 +72,16 @@ end
 
 function GM:CollectBallModels()
 	self.BallModels = { DAMASHI.DefaultBallModel }
-
-	local files = file.Find("models/damashi/ball_*.mdl", "GAME")
-	for _, f in ipairs(files) do
+	self.BallNames = {}
+	local mdlFiles = file.Find("models/damashi/ball_*.mdl", "GAME")
+	for _, f in ipairs(mdlFiles) do
 		local path = "models/damashi/" .. f
 		if path ~= DAMASHI.DefaultBallModel then
 			table.insert(self.BallModels, path)
+			local namesListName = "models/damashi/" .. f:StripExtension():Replace("ball_", "names_") .. ".txt"
+			if file.Exists(namesListName, "GAME") then 
+				self.BallNames[path] = namesListName
+			end
 		end
 	end
 end
@@ -87,6 +91,10 @@ function GM:SendBallModelList(ply)
 		net.WriteUInt(#self.BallModels, 8)
 		for _, mdl in ipairs(self.BallModels) do
 			net.WriteString(mdl)
+			net.WriteBool(self.BallNames[mdl])
+			if self.BallNames[mdl] then
+				net.WriteString(self.BallNames[mdl])
+			end
 		end
 	if ply then
 		net.Send(ply)
@@ -105,6 +113,7 @@ end
 
 net.Receive("damashi_select_ball", function(len, ply)
 	local mdl = net.ReadString()
+	local skin = net.ReadUInt(10)
 
 	-- Only allow models from the server-approved list.
 	local allowed = false
@@ -114,11 +123,13 @@ net.Receive("damashi_select_ball", function(len, ply)
 	if not allowed then return end
 
 	ply.DamashiBallModel = mdl
+	ply.DamashiBallSkin = skin
 	ply:SetNWString("DamashiBallModel", mdl)
+	ply:SetNWString("DamashiBallSkin", skin)
 
 	local ball = ply.DamashiBall
 	if IsValid(ball) then
-		ball:ChangeModel(mdl)
+		ball:ChangeModel(mdl, skin)
 	end
 end)
 
@@ -399,21 +410,27 @@ function GM:AttachBall(ply)
 		local customs = {}
 		for _, m in ipairs(self.BallModels or {}) do
 			if m ~= DAMASHI.DefaultBallModel then
-				table.insert(customs, m)
+				for s = 0, util.GetModelInfo(m).SkinCount - 1 do 
+					table.insert(customs, {m, s})
+				end
 			end
 		end
 		if #customs > 0 then
-			ply.DamashiBallModel = customs[math.random(#customs)]
+			ply.DamashiBallModel = customs[math.random(#customs)][1]
+			ply.DamashiBallSkin = customs[math.random(#customs)][2]
 		else
 			ply.DamashiBallModel = DAMASHI.DefaultBallModel
+			ply.DamashiBallSkin = 0
 		end
 		ply:SetNWString("DamashiBallModel", ply.DamashiBallModel)
+		ply:SetNWString("DamashiBallSkin", ply.DamashiBallSkin)
 	end
 
 	local ball = ents.Create("damashi_ball")
 	if not IsValid(ball) then return end
 
 	ball.PreferredModel = ply.DamashiBallModel
+	ball.PreferredSkin = ply.DamashiBallSkin
 
 	ball:SetPos(ply:GetPos() + Vector(0, 0, DAMASHI.BaseRadius + 4))
 	ball:Spawn()

@@ -38,6 +38,7 @@ DAMASHI.RespawnDelay        = 3
 DAMASHI.UnitsToMeters       = 0.01905  -- 1 source unit ≈ 1.905 cm; HUD readout only
 
 DAMASHI.DefaultBallModel    = "models/hunter/misc/sphere075x075.mdl"
+DAMASHI.DefaultBallSkin		= 0
 
 -- GMod does not auto-load entities/ from a gamemode folder; explicit include is required.
 include("ent_ball.lua")
